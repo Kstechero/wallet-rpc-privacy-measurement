@@ -1,84 +1,84 @@
-# 钱包—RPC 隐私泄露实证测量项目
+# Wallet–RPC Privacy Leakage Measurement (Empirical Study)
 
-## 1. 项目背景
-在以太坊等 EVM 生态中，用户钱包（例如 MetaMask）通常不会自己维护完整节点，而是通过第三方或公共的 RPC（JSON-RPC）端点读取链上数据、模拟合约调用、广播交易等。  
-这带来了潜在隐私风险：RPC 服务提供商（以及网络路径中的观察者）可能基于请求的元数据与语义信息（例如 method、时间戳、请求频率、是否包含地址参数等）对用户行为进行画像，甚至进行多地址关联（linkability）推断。
+## 1. Background
+In Ethereum and other EVM ecosystems, user wallets (e.g., MetaMask) typically do not maintain a full node locally. Instead, they rely on third-party or public RPC (JSON-RPC) endpoints to read on-chain data, simulate contract calls, and broadcast transactions.  
+This creates potential privacy risks: RPC providers (and observers along the network path) may profile user behavior based on request metadata and semantics (e.g., method type, timestamps, request frequency, whether address parameters appear), and may even attempt multi-address linkage (linkability) inference.
 
-本项目目标是对上述风险进行“实证测量（empirical measurement）”：通过可复现实验框架在不同 RPC provider 上执行相同负载，收集结构化日志并计算指标，用数据支撑分析结论。
-
----
-
-## 2. 研究目标（Problem Statement）
-本项目旨在测量并量化“钱包通过 RPC 请求可能泄露的隐私信息类型与程度”，并比较不同 RPC provider 在以下维度上的差异：
-- 可用性：成功率、超时率、错误类型
-- 性能：请求延迟分布（median/avg/max 等）
-- 隐私暴露代理指标（proxies）：
-  - method 分布（用户在做什么行为）
-  - 是否出现地址型请求（has_address）
-  - 请求频率/节奏（行为特征）
+The goal of this project is to conduct an **empirical measurement** of these risks: by running the same controlled workloads across different RPC providers, collecting structured logs, and computing metrics to support evidence-based conclusions.
 
 ---
 
-## 3. 范围界定（Scope）
-当前 Milestone 1 阶段的范围聚焦于：
-- 网络：Sepolia 测试网（chain_id = 11155111）
-- 请求场景（scenarios）：
-  - `blocknumber`：调用 `eth_blockNumber`（无地址参数，用于连通性/性能基准）
-  - `balance`：调用 `eth_getBalance`（包含地址参数，用于地址暴露代理）
-- 对比对象：至少两个不同 RPC endpoint（providerA/providerB）
-- 数据输出：JSONL（每行一条 RPC 请求记录）
-
-不在 Milestone 1 强制范围内（可作为后续扩展）：
-- 交易广播、DeFi/NFT 合约交互、WebSocket 订阅
-- 抓包/代理分析（Wireshark/mitmproxy）获取网络层元数据
-- 复杂多地址关联算法与评分模型
+## 2. Problem Statement
+This project aims to measure and quantify the types and degree of privacy information that may be leaked through wallet RPC requests, and to compare different RPC providers along these dimensions:
+- **Availability:** success rate, timeout rate, error types
+- **Performance:** latency distribution (median / average / max, etc.)
+- **Privacy exposure proxies:**
+  - method distribution (what actions the user is performing)
+  - presence of address-bearing requests (`has_address`)
+  - request cadence/frequency (behavioral signatures)
 
 ---
 
-## 4. 威胁模型（Threat Model v1，简要）
-潜在攻击者/观察者：
-- RPC 服务提供商（记录请求、聚合行为）
-- 网络监听者/中间人（观察请求时序与连接信息）
-- 恶意 RPC 节点运营者（主动收集与分析）
-- 数据分析公司（跨站/跨服务关联）
+## 3. Scope
+For **Milestone 1**, the scope focuses on:
+- **Network:** Sepolia testnet (`chain_id = 11155111`)
+- **Scenarios:**
+  - `blocknumber`: calls `eth_blockNumber` (no address parameter; connectivity/performance baseline)
+  - `balance`: calls `eth_getBalance` (includes address parameter; address exposure proxy)
+- **Comparison targets:** at least two different RPC endpoints (providerA/providerB)
+- **Data output:** JSONL (one JSON record per RPC request)
 
-主要攻击向量（本项目当前可测的部分）：
-- 元数据泄露：请求时间戳、频率、延迟、错误特征
-- 语义泄露：method 类型、是否包含地址/合约调用痕迹
-- 关联推断：同一来源的多地址访问模式（后续扩展）
-
----
-
-## 5. 测量框架（Measurement Harness）是什么
-本项目实现了一个“可复现实验 harness”，用于：
-- 读取配置文件（YAML）：指定 network、rpc_url、scenario、duration、interval 等
-- 自动发起 JSON-RPC 请求：如 `eth_blockNumber`、`eth_getBalance`
-- 记录每次请求的关键元数据到 JSONL 日志
-- 对不同 provider 运行相同负载，实现 A/B 对比
-- 使用 `summarize.py` 对日志进行汇总统计
-
-一句话：harness = “一键重复跑实验 + 产出可分析数据”的自动化框架。
+Out of scope for Milestone 1 (possible later extensions):
+- transaction broadcasting, DeFi/NFT interactions, WebSocket subscriptions
+- traffic interception/proxy analysis (Wireshark / mitmproxy) for network-layer metadata
+- advanced multi-address correlation algorithms and scoring models
 
 ---
 
-## 6. 项目结构
+## 4. Threat Model (v1, brief)
+Potential attackers/observers:
+- RPC providers (logging and aggregating requests)
+- network eavesdroppers / MITM observers (timing and connection observations)
+- malicious RPC node operators (active collection and analysis)
+- data analytics companies (cross-service correlation)
+
+Primary attack vectors (measurable in the current phase):
+- **metadata leakage:** timestamps, frequency, latency, error patterns
+- **semantic leakage:** method types, presence of addresses / contract interaction traces
+- **linkage inference:** behavioral patterns across multiple addresses from the same source (later extension)
+
+---
+
+## 5. What is the Measurement Harness?
+This project implements a reproducible **measurement harness** that:
+- reads YAML configs specifying network, `rpc_url`, `scenario`, duration, interval, etc.
+- automatically issues JSON-RPC requests (e.g., `eth_blockNumber`, `eth_getBalance`)
+- logs key per-request metadata into JSONL
+- runs identical workloads across providers for A/B comparison
+- summarizes logs via `summarize.py`
+
+In one sentence: the harness is an automated framework that enables repeatable experiments and produces analyzable outputs.
+
+---
+
+## 6. Project Structure
 - `configs/`
-  - `exp_sepolia_providerA.yaml`：Provider-A 实验配置
-  - `exp_sepolia_providerB.yaml`：Provider-B 实验配置
-  - `addresses_demo.txt`：余额查询用地址列表（每行一个 0x... 地址）
+  - `exp_sepolia_providerA.yaml`: Provider-A experiment config
+  - `exp_sepolia_providerB.yaml`: Provider-B experiment config
+  - `addresses_demo.txt`: address list for balance queries (one `0x...` per line)
 - `src/`
-  - `runner.py`：实验入口，读取 config，循环运行场景并写日志
-  - `rpc_client.py`：JSON-RPC 客户端（HTTP）
-  - `scenarios.py`：场景定义与参数构造
-  - `logger.py`：构造日志记录并写入 JSONL
-  - `summarize.py`：汇总日志并输出指标
+  - `runner.py`: entry point; loads config, runs scenarios, writes logs
+  - `rpc_client.py`: JSON-RPC client (HTTP)
+  - `scenarios.py`: scenario definitions and parameter construction
+  - `logger.py`: constructs and appends JSONL records
+  - `summarize.py`: summarizes logs into metrics
 - `logs/`
-  - 运行生成的 JSONL（建议默认忽略或仅提交脱敏样例）
+  - runtime-generated JSONL logs (recommended to ignore or only commit de-identified samples)
 
 ---
 
-## 7. 配置说明（示例）
-### 7.1 Blocknumber 场景（基准）
+## 7. Configuration Examples
+### 7.1 Blocknumber scenario (baseline)
 ```yaml
 provider_id: providerA
 chain_id: 11155111

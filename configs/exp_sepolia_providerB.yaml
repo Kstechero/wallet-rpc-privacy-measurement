@@ -1,7 +1,8 @@
 provider_id: providerB
 chain_id: 11155111
 rpc_url: "https://sepolia.gateway.tenderly.co"
-scenario: "blocknumber"
+scenario: "balance"
+addresses_file: "configs/addresses_demo.txt"
 duration_s: 60
 interval_s: 5
 out_log: "logs/run_providerB.jsonl"
