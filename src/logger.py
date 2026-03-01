@@ -2,9 +2,11 @@ import json
 import hashlib
 from typing import Any, Dict, Optional
 
+
 def _hash_params(params: Any) -> str:
     s = json.dumps(params, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(s.encode("utf-8")).hexdigest()[:16]
+
 
 def _contains_hex_address(params: Any) -> bool:
     # heuristic: 0x + 40 hex chars
@@ -29,24 +31,44 @@ def _contains_hex_address(params: Any) -> bool:
         return any(_contains_hex_address(v) for v in params.values())
     return False
 
+
 def build_log_record(
     base: Dict[str, Any],
     method: str,
     params: Any,
     latency_ms: int,
     status: str,
-    error: Optional[str]
+    error: Optional[str],
+    attempt: int,
+    data: Optional[Dict[str, Any]],
 ) -> Dict[str, Any]:
     rec = dict(base)
-    rec.update({
-        "method": method,
-        "params_hash": _hash_params(params),
-        "has_address": _contains_hex_address(params),
-        "latency_ms": latency_ms,
-        "status": status,
-        "error": error
-    })
+    rec.update(
+        {
+            "method": method,
+            "params_hash": _hash_params(params),
+            "has_address": _contains_hex_address(params),
+            "latency_ms": latency_ms,
+            "status": status,
+            "error": error,
+            "attempt": attempt,
+        }
+    )
+
+    # minimal response metadata (privacy-preserving): record length/type only
+    if data is not None and "result" in data:
+        result = data["result"]
+        rec["result_type"] = type(result).__name__
+        try:
+            rec["result_len"] = len(result)  # works for str/list/dict
+        except Exception:
+            rec["result_len"] = None
+    else:
+        rec["result_type"] = None
+        rec["result_len"] = None
+
     return rec
+
 
 def append_jsonl(path: str, record: Dict[str, Any]) -> None:
     with open(path, "a", encoding="utf-8") as f:
