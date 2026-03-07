@@ -64,6 +64,33 @@ def summarize(path: str) -> None:
         for k, v in errors.most_common(10):
             print(f"  {k}: {v}")
 
+
+# ======================= M2 New code ==============================
+def calculate_core_metrics(records: List[Dict]) -> Dict:
+
+    p95_latency = np.percentile(latencies, 95) if latencies else 0
+    p99_latency = np.percentile(latencies, 99) if latencies else 0
+
+    error_type_count = {}
+    for record in records:
+        error = record.get('error', None)
+        error_type = error if error else 'success'
+        error_type_count[error_type] = error_type_count.get(error_type, 0) + 1
+
+    request_timestamps = [r.get('timestamp', 0) for r in records if r.get('timestamp', 0) > 0]
+    request_intervals = [request_timestamps[i]-request_timestamps[i-1] for i in range(1, len(request_timestamps))]
+    timing_variance = np.var(request_intervals) if request_intervals else 0
+
+    metrics.update({
+        'p95_latency_ms': round(p95_latency, 2),
+        'p99_latency_ms': round(p99_latency, 2),
+        'error_type_distribution': error_type_count,
+        'request_interval_variance': round(timing_variance, 4)
+    })
+    
+    return metrics
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python src/summarize.py <path_to_jsonl> [<path_to_jsonl> ...]")
