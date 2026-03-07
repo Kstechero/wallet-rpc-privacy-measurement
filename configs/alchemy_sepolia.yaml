@@ -1,0 +1,20 @@
+
+## 4. configs/alchemy_sepolia.yaml
+```yaml
+# M2 New Config: Alchemy Sepolia RPC (Standardized YAML format - M1 compatible)
+rpc_provider: "Alchemy"
+network: "Sepolia"
+rpc_url: "https://eth-sepolia.g.alchemy.com/v2/[YOUR_API_KEY]"
+request_scenarios:  # M2 expanded scenarios (nonce/eth_call)
+  - scenario: "nonce"
+    method: "eth_getTransactionCount"
+    params: ["0xYourWalletAddress", "latest"]
+    request_count: 100
+    interval_seconds: 1
+  - scenario: "eth_call"
+    method: "eth_call"
+    params: [{"to": "0xContractAddress", "data": "0xData"}, "latest"]
+    request_count: 100
+    interval_seconds: 1
+log_path: "logs/m2_experiments/alchemy_sepolia.log"  # M2 log path (M1 spec)
+timeout_ms: 5000
