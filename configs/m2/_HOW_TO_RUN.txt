@@ -1,0 +1,21 @@
+M2 config pack generated for wallet-rpc-privacy-measurement
+
+Scenarios:
+  - blocknumber       -> eth_blockNumber (address-free control)
+  - balance           -> eth_getBalance (requires addresses_file)
+  - nonce             -> eth_getTransactionCount (requires addresses_file)
+  - call              -> eth_call (address-free, uses zero address)
+  - estimateGas       -> eth_estimateGas (requires addresses_file)
+
+Providers:
+  - providerA -> https://ethereum-sepolia-rpc.publicnode.com
+  - providerB -> https://sepolia.gateway.tenderly.co
+
+Intervals: int1 / int5
+Repeats: rep1 / rep2 / rep3
+
+Run all:
+  python src/batch_run.py "configs/m2/*.yaml" results/summary.csv
+
+Run one:
+  EXP_CONFIG=configs/m2/A_balance_int1_rep1.yaml python src/runner.py
