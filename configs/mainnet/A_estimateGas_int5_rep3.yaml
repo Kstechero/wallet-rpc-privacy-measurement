@@ -1,0 +1,9 @@
+provider_id: "providerA"
+chain_id: 1
+rpc_url: "https://ethereum-rpc.publicnode.com"
+scenario: "estimateGas"
+duration_s: 120
+interval_s: 5
+repeat_id: 3
+addresses_file: "configs/addresses_demo.txt"
+out_log: "logs/providerA_ethmainnet_estimateGas_int5_rep3.jsonl"

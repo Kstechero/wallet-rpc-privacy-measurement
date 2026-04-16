@@ -1,0 +1,7 @@
+pyyaml
+requests
+python-dotenv
+requests
+PyYAML
+pandas
+matplotlib

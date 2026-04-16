@@ -1,0 +1,8 @@
+provider_id: "providerA"
+chain_id: 1
+rpc_url: "https://ethereum-rpc.publicnode.com"
+scenario: "blocknumber"
+duration_s: 120
+interval_s: 5
+repeat_id: 1
+out_log: "logs/providerA_ethmainnet_blocknumber_int5_rep1.jsonl"

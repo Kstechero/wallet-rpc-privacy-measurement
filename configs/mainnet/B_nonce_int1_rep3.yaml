@@ -1,0 +1,9 @@
+provider_id: "providerB"
+chain_id: 1
+rpc_url: "https://eth-mainnet.g.alchemy.com/v2/_nJ0_fXdxbxYz7KATWLfL"
+scenario: "nonce"
+duration_s: 120
+interval_s: 1
+repeat_id: 3
+addresses_file: "configs/addresses_demo.txt"
+out_log: "logs/providerB_ethmainnet_nonce_int1_rep3.jsonl"

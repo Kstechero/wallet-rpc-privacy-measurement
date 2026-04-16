@@ -1,0 +1,9 @@
+provider_id: "providerA"
+chain_id: 1
+rpc_url: "https://ethereum-rpc.publicnode.com"
+scenario: "balance"
+duration_s: 120
+interval_s: 1
+repeat_id: 1
+addresses_file: "configs/addresses_demo.txt"
+out_log: "logs/providerA_ethmainnet_balance_int1_rep1.jsonl"

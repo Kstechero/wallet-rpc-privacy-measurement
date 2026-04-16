@@ -1,0 +1,11 @@
+provider_id: providerB
+chain_id: 11155111
+duration_s: 120
+timeout_s: 15
+retries: 1
+rpc_url: "https://sepolia.gateway.tenderly.co"
+scenario: nonce
+interval_s: 1
+repeat_id: 1
+addresses_file: configs/addresses_demo.txt
+out_log: logs/providerB_nonce_int1_rep1.jsonl
